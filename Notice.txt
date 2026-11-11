@@ -1,0 +1,29 @@
+1/. To install folder strctures project 
+=======================================
+mkdir smartdocs && cd smartdocs
+mkdir -p docker/php docker/nginx docker/postgres ai-service
+
+2/. To install backend and frontend 
+=======================================
+# Laravel 12
+docker run --rm -v "$(pwd)":/app -w /app composer:2 \
+  composer create-project laravel/laravel:^12.0 backend
+
+# React + Vite
+docker run --rm -v "$(pwd)":/app -w /app node:22-alpine \
+  npm create vite@latest frontend -- --template react
+
+3/. Password for All Users
+=============================
+Passwords set by the seeder
+Role	Email	Password
+Admin	admin@smartdocs.test	Admin@12345
+Manager	manager@smartdocs.test	Manager@12345
+Staff	staff@smartdocs.test	Staff@12345
+
+4/. To assign role (Commands)
+=====================
+docker compose exec app php artisan tinker --execute='
+$u = App\Models\User::create(["name"=>"Sok Dara","email"=>"sok@company.com","password"=>"Strong@2026"]);
+$u->assignRole("manager");
+echo "created\n";'

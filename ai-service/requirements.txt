@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+docling
+psycopg[binary]
+pgvector
+httpx
+boto3
+anthropic
