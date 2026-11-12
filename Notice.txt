@@ -27,3 +27,66 @@ docker compose exec app php artisan tinker --execute='
 $u = App\Models\User::create(["name"=>"Sok Dara","email"=>"sok@company.com","password"=>"Strong@2026"]);
 $u->assignRole("manager");
 echo "created\n";'
+
+==================================================
+5/. Commands to push code for up to date on github  
+==================================================
+
+cd ~/projects/smartdocs
+
+# 1) see what changed
+git status
+
+# 2) safety check: no secrets or dumps should be tracked (must print the OK line)
+git ls-files | grep -E "(^|/)\.env$|\.sql|\.tar\.gz|\.zip$" | grep -v "docker/postgres/init.sql" || echo "OK: no secrets tracked"
+
+# 3) save and upload
+git add -A
+git commit -m "Describe what you changed"
+git push
+
+  // On the server: get the latest code
+======================================
+cd /opt/smartdocs
+git pull
+
+ // Then Apply and change
+ ==============================
+ D="docker compose -f docker-compose.prod.yml"
+
+# Backend (PHP) changed
+$D exec app php artisan migrate --force
+$D exec app php artisan config:cache
+$D exec app php artisan route:cache
+
+# Frontend, Dockerfile or compose file changed
+$D build
+$D up -d
+
+# Check
+$D ps
+ // For a quick safe routine, run all of it after every git pull, and make a backup first:
+ ========================================================================================
+ sudo /opt/smartdocs/backup.sh
+cd /opt/smartdocs && git pull
+D="docker compose -f docker-compose.prod.yml"
+$D build && $D up -d
+$D exec app php artisan migrate --force
+$D exec app php artisan config:cache
+ // Work on a branch
+ =========================
+ git switch -c feature/new-thing
+git add -A && git commit -m "Add new thing"
+git push -u origin feature/new-thing
+
+// Github and merge in into main
+==================================
+git switch main
+git pull
+
+//  Tag a release (a stable version to deploy)
+==============================================
+
+git tag -a v1.0.0 -m "First production release"
+git push origin v1.0.0
+
