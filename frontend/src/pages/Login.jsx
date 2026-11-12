@@ -11,8 +11,8 @@ export default function Login() {
   const { t, lang, toggleLang } = useLang();
   const { dark, toggleDark } = useTheme();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@smartdocs.test');
-  const [password, setPassword] = useState('Admin@12345');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
 
   if (user) return <Navigate to="/administrator" replace />;

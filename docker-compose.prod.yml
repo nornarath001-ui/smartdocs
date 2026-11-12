@@ -1,0 +1,65 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+      args:
+        VITE_API_URL: /api
+    ports: ["80:80"]
+    depends_on: [app]
+    restart: always
+
+  app:
+    build: ./docker/php
+    image: smartdocs-php
+    volumes: ["./backend:/var/www/html"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: always
+
+  queue:
+    image: smartdocs-php
+    command: php artisan queue:work --tries=3 --timeout=300
+    volumes: ["./backend:/var/www/html"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: always
+
+  translator:
+    build: ./docker/translator
+    environment:
+      THREADS: "4"
+      MODEL_REPO: ${TRANSLATOR_MODEL:-JustFrederik/nllb-200-distilled-1.3B-ct2-int8}
+    volumes: [modelcache:/models]
+    restart: always
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      retries: 10
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+    restart: always
+
+volumes:
+  pgdata:
+  redisdata:
+  modelcache:
