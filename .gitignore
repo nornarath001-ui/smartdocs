@@ -1,13 +1,23 @@
+# Secrets
 .env
 .env.*
 !.env.example
-!.env.production.example
-vendor/
+
+# Dependencies and builds
 node_modules/
+vendor/
 dist/
-build/
-.next/
-*.log
-.DS_Store
+
+# Data that must never be in git
+*.sql
+*.sql.gz
+*.tar.gz
+*.zip
+backup/
+backups/
+
+# Editors and OS
 .idea/
 .vscode/
+.DS_Store
+Thumbs.db
